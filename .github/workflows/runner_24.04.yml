@@ -33,10 +33,13 @@ jobs:
         run: |
           cd `find . -maxdepth 1 -type d -name '1.*' -print -quit`
           CC=/usr/bin/aarch64-linux-gnu-gcc-14 CXX=/usr/bin/aarch64-linux-gnu-g++-14 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
+      - name: Package SDK as tar.xz
+        run: |
+          tar -cJf vulkan-sdk-arm64.tar.xz `find . -maxdepth 1 -type d -name '1.*' -print -quit`
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name:  Vulkan-SDK-24.04_ARM
-          path:  1.*/
+          name: vulkan-sdk-arm64
+          path: vulkan-sdk-arm64.tar.xz
           
           
