@@ -22,7 +22,7 @@ jobs:
           if [[ "${{ github.event.inputs.version }}" == "latest" || -z "${{ github.event.inputs.version }}" ]]; then
             echo "SDK_URL=https://sdk.lunarg.com/sdk/download/latest/linux/vulkan-sdk.tar.xz" >> $GITHUB_ENV
           else
-            echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ github.event.inputs.version }}/linux/vulkansdk-linux-arm64-${{ github.event.inputs.version }}.tar.xz" >> $GITHUB_ENV
+            echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ github.event.inputs.version }}/linux/vulkansdk-linux-x86_64-${{ github.event.inputs.version }}.tar.xz" >> $GITHUB_ENV
           fi
 
       - name: Update APT
