@@ -41,5 +41,6 @@ jobs:
         with:
           name: vulkan-sdk-arm64
           path: vulkan-sdk-arm64.tar.xz
+          compression-level: 0
           
           
