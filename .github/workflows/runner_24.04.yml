@@ -21,8 +21,10 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.version }}" == "latest" || -z "${{ github.event.inputs.version }}" ]]; then
             echo "SDK_URL=https://sdk.lunarg.com/sdk/download/latest/linux/vulkan-sdk.tar.xz" >> $GITHUB_ENV
+            echo "Using default SDK version: latest"
           else
             echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ github.event.inputs.version }}/linux/vulkansdk-linux-x86_64-${{ github.event.inputs.version }}.tar.xz" >> $GITHUB_ENV
+            echo "Using specified SDK version: ${{ github.event.inputs.version }}"
           fi
 
       - name: Update APT
@@ -78,5 +80,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vulkan-sdk-arm64
-          path: vulkansdk-linux-arm64-$SDK_VERSION.tar.xz
+          path: vulkansdk-linux-arm64-${{ env.SDK_VERSION }}.tar.xz
           compression-level: 0
