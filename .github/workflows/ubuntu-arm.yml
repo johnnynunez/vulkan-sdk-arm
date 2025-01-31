@@ -1,4 +1,4 @@
-name: Build-SDK-Matrix
+name: Build-Vulkan-SDK-ARM
 on:
   push:
   workflow_dispatch:
