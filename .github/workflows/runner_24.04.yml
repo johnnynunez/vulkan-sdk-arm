@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Vulkan SDK version (ej. 1.4.304.0)'
+        description: 'Vulkan SDK version (e.g., 1.4.304.0)'
         required: false
         default: 'latest'
 
@@ -19,10 +19,10 @@ jobs:
       - name: Set version variable
         id: vars
         run: |
-          if [ "${{ inputs.version }}" = "latest" ]; then
+          if [[ "${{ github.event.inputs.version }}" == "latest" || -z "${{ github.event.inputs.version }}" ]]; then
             echo "SDK_URL=https://sdk.lunarg.com/sdk/download/latest/linux/vulkan-sdk.tar.xz" >> $GITHUB_ENV
           else
-            echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ inputs.version }}/linux/vulkansdk-linux-x86_64-${{ inputs.version }}.tar.xz" >> $GITHUB_ENV
+            echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ github.event.inputs.version }}/linux/vulkansdk-linux-arm64-${{ github.event.inputs.version }}.tar.xz" >> $GITHUB_ENV
           fi
 
       - name: Update APT
@@ -31,7 +31,7 @@ jobs:
       - name: Install Host Dependencies
         run: sudo apt install cmake ninja-build gcc-14 g++-14 bison ocaml-core xz-utils pkg-config python3-pip -y
 
-      - name: Install python
+      - name: Install Python
         run: pip3 install setuptools wheel
 
       - name: Install Target Dependencies
@@ -45,22 +45,22 @@ jobs:
       - name: Download SDK
         run: curl -L -o vulkan-sdk.tar.xz "$SDK_URL"
 
-      - name: Extract version from tarball
-        if: ${{ inputs.version == 'latest' }}
+      - name: Extract version from tarball (if latest)
+        if: github.event.inputs.version == 'latest'
         run: |
           tar -xf vulkan-sdk.tar.xz --wildcards '*/vulkansdk'
-          SDK_VERSION=$(find . -maxdepth 1 -type d -name '1.*' -printf "%f\n")
+          SDK_VERSION=$(find . -maxdepth 1 -type d -name '1.*' | head -n 1 | xargs basename)
           echo "SDK_VERSION=${SDK_VERSION}" >> $GITHUB_ENV
 
       - name: Set version for specific releases
-        if: ${{ inputs.version != 'latest' }}
+        if: github.event.inputs.version != 'latest'
         run: |
-          echo "SDK_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          echo "SDK_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Unpack SDK
         run: tar -xJf vulkan-sdk.tar.xz
 
-      - name: Remove x86_64
+      - name: Remove x86_64 directory
         run: |
           cd "$SDK_VERSION"
           rm -rf x86_64
