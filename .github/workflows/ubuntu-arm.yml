@@ -1,4 +1,4 @@
-name: Build-SDK 24.04
+name: Build-SDK-Matrix
 on:
   push:
   workflow_dispatch:
@@ -10,8 +10,11 @@ on:
 
 jobs:
   build-linux-arm:
-    name: Build SDK for Linux 24.04 arm64
-    runs-on: ubuntu-24.04-arm
+    name: Build SDK for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-arm, ubuntu-24.04-arm]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -31,7 +34,12 @@ jobs:
         run: sudo apt update
 
       - name: Install Host Dependencies
-        run: sudo apt install cmake ninja-build gcc-14 g++-14 bison ocaml-core xz-utils pkg-config python3-pip -y
+        run: |
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            sudo apt install cmake ninja-build gcc-12 g++-12 bison ocaml-core xz-utils pkg-config python3-pip -y
+          elif [[ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]]; then
+            sudo apt install cmake ninja-build gcc-14 g++-14 bison ocaml-core xz-utils pkg-config python3-pip -y
+          fi
 
       - name: Install Python
         run: pip3 install setuptools wheel
@@ -70,7 +78,11 @@ jobs:
       - name: Build SDK
         run: |
           cd "$SDK_VERSION"
-          CC=/usr/bin/aarch64-linux-gnu-gcc-14 CXX=/usr/bin/aarch64-linux-gnu-g++-14 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            CC=/usr/bin/aarch64-linux-gnu-gcc-12 CXX=/usr/bin/aarch64-linux-gnu-g++-12 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
+          elif [[ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]]; then
+            CC=/usr/bin/aarch64-linux-gnu-gcc-14 CXX=/usr/bin/aarch64-linux-gnu-g++-14 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
+          fi
 
       - name: Package SDK as tar.xz
         run: |
@@ -79,6 +91,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: vulkan-sdk-arm64
+          name: vulkan-sdk-arm64-${{ matrix.os }}
           path: vulkansdk-linux-arm64-${{ env.SDK_VERSION }}.tar.xz
           compression-level: 0
