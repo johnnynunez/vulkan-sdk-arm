@@ -37,6 +37,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: vulkan-sdk-arm64
-          path: vulkan-sdk-arm64.tar.xz
+          name: vulkansdk-linux-x86_64-1.4.304.0
+          path: vulkansdk-linux-x86_64-1.4.304.0.tar.xz
           compression-level: 0
