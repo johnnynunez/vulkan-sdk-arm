@@ -26,7 +26,7 @@ jobs:
             echo "SDK_URL=https://sdk.lunarg.com/sdk/download/latest/linux/vulkan-sdk.tar.xz" >> $GITHUB_ENV
             echo "Using default SDK version: latest"
           else
-            echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ github.event.inputs.version }}/linux/vulkansdk-linux-x86_64-${{ github.event.inputs.version }}.tar.xz" >> $GITHUB_ENV
+            echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ github.event.inputs.version }}/linux/vulkansdk-linux-arm64-${{ github.event.inputs.version }}.tar.xz" >> $GITHUB_ENV
             echo "Using specified SDK version: ${{ github.event.inputs.version }}"
           fi
 
@@ -55,29 +55,21 @@ jobs:
       - name: Download SDK
         run: curl -L -o vulkan-sdk.tar.xz "$SDK_URL"
 
-      - name: Extract version from tarball (if latest)
-        if: github.event.inputs.version == 'latest'
+      - name: Extract SDK and Determine SDK Directory
         run: |
-          tar -xf vulkan-sdk.tar.xz --wildcards '*/vulkansdk'
-          SDK_VERSION=$(find . -maxdepth 1 -type d -name '1.*' | head -n 1 | xargs basename)
-          echo "SDK_VERSION=${SDK_VERSION}" >> $GITHUB_ENV
-
-      - name: Set version for specific releases
-        if: github.event.inputs.version != 'latest'
-        run: |
-          echo "SDK_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-
-      - name: Unpack SDK
-        run: tar -xJf vulkan-sdk.tar.xz
+          tar -xJf vulkan-sdk.tar.xz
+          SDK_DIR=$(find . -maxdepth 1 -type d -name '1.*' | head -n 1)
+          echo "SDK_DIR=${SDK_DIR}" >> $GITHUB_ENV
+          echo "SDK_VERSION=$(basename ${SDK_DIR})" >> $GITHUB_ENV
 
       - name: Remove x86_64 directory
         run: |
-          cd "$SDK_VERSION"
+          cd "${{ env.SDK_DIR }}"
           rm -rf x86_64
 
       - name: Build SDK
         run: |
-          cd "$SDK_VERSION"
+          cd "${{ env.SDK_DIR }}"
           if [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
             CC=/usr/bin/aarch64-linux-gnu-gcc-12 CXX=/usr/bin/aarch64-linux-gnu-g++-12 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
           elif [[ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]]; then
@@ -86,7 +78,7 @@ jobs:
 
       - name: Package SDK as tar.xz
         run: |
-          tar -cJf "vulkansdk-linux-arm64-$SDK_VERSION.tar.xz" "$SDK_VERSION"
+          tar -cJf "vulkansdk-linux-arm64-${{ env.SDK_VERSION }}.tar.xz" "${{ env.SDK_DIR }}"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
