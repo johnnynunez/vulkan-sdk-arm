@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Vulkan SDK version (ej. 1.4.304.0)'
+        description: 'Vulkan SDK version (e.g., 1.4.304.0)'
         required: false
         default: 'latest'
 
@@ -29,37 +29,38 @@ jobs:
         run: sudo apt update
 
       - name: Install Host Dependencies
-        run: sudo apt install cmake ninja-build gcc-12 g++-12 bison python3-distutils ocaml-core xz-utils pkg-config
+        run: sudo apt install cmake ninja-build gcc-12 g++-12 bison ocaml-core xz-utils pkg-config python3-pip -y
+
+      - name: Install Python
+        run: pip3 install setuptools wheel
+
       - name: Install Target Dependencies
-        run: | 
+        run: |
           sudo apt install libglm-dev libxcb-dri3-0 libxcb-present0 libpciaccess0 \
           libpng-dev libxcb-keysyms1-dev libxcb-dri3-dev libx11-dev \
           libwayland-dev libxrandr-dev libxcb-randr0-dev libxcb-ewmh-dev \
           libx11-xcb-dev liblz4-dev libzstd-dev \
           libxml2-dev wayland-protocols -y --no-install-recommends
-          
-      - name: Install python
-        run: pip3 install setuptools wheel
 
       - name: Download SDK
         run: curl -L -o vulkan-sdk.tar.xz "$SDK_URL"
 
-      - name: Extract version from tarball
-        if: ${{ inputs.version == 'latest' }}
+      - name: Extract version from tarball (if latest)
+        if: github.event.inputs.version == 'latest'
         run: |
           tar -xf vulkan-sdk.tar.xz --wildcards '*/vulkansdk'
-          SDK_VERSION=$(find . -maxdepth 1 -type d -name '1.*' -printf "%f\n")
+          SDK_VERSION=$(find . -maxdepth 1 -type d -name '1.*' | head -n 1 | xargs basename)
           echo "SDK_VERSION=${SDK_VERSION}" >> $GITHUB_ENV
 
       - name: Set version for specific releases
-        if: ${{ inputs.version != 'latest' }}
+        if: github.event.inputs.version != 'latest'
         run: |
-          echo "SDK_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          echo "SDK_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
       - name: Unpack SDK
         run: tar -xJf vulkan-sdk.tar.xz
 
-      - name: Remove x86_64
+      - name: Remove x86_64 directory
         run: |
           cd "$SDK_VERSION"
           rm -rf x86_64
