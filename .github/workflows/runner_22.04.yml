@@ -21,15 +21,17 @@ jobs:
         run: |
           if [[ "${{ github.event.inputs.version }}" == "latest" || -z "${{ github.event.inputs.version }}" ]]; then
             echo "SDK_URL=https://sdk.lunarg.com/sdk/download/latest/linux/vulkan-sdk.tar.xz" >> $GITHUB_ENV
+            echo "Using default SDK version: latest"
           else
             echo "SDK_URL=https://sdk.lunarg.com/sdk/download/${{ github.event.inputs.version }}/linux/vulkansdk-linux-x86_64-${{ github.event.inputs.version }}.tar.xz" >> $GITHUB_ENV
+            echo "Using specified SDK version: ${{ github.event.inputs.version }}"
           fi
 
       - name: Update APT
         run: sudo apt update
 
       - name: Install Host Dependencies
-        run: sudo apt install cmake ninja-build gcc-12 g++-12 bison ocaml-core xz-utils pkg-config python3-pip -y
+        run: sudo apt install cmake ninja-build gcc-14 g++-14 bison ocaml-core xz-utils pkg-config python3-pip -y
 
       - name: Install Python
         run: pip3 install setuptools wheel
@@ -68,7 +70,7 @@ jobs:
       - name: Build SDK
         run: |
           cd "$SDK_VERSION"
-          CC=/usr/bin/aarch64-linux-gnu-gcc-12 CXX=/usr/bin/aarch64-linux-gnu-g++-12 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
+          CC=/usr/bin/aarch64-linux-gnu-gcc-14 CXX=/usr/bin/aarch64-linux-gnu-g++-14 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
 
       - name: Package SDK as tar.xz
         run: |
@@ -78,5 +80,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vulkan-sdk-arm64
-          path: vulkansdk-linux-arm64-$SDK_VERSION.tar.xz
+          path: vulkansdk-linux-arm64-${{ env.SDK_VERSION }}.tar.xz
           compression-level: 0
