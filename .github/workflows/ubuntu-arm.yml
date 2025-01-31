@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-linux-arm:
-    name: Build SDK for ${{ matrix.os }}
+    name: Build Vulkan-SDK-ARM for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
