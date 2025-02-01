@@ -77,12 +77,13 @@ jobs:
           fi
 
       # When an Artifact is uploaded, all the files are assembled into an immutable Zip archive. There is currently no way to download artifacts in a format other than a Zip or to download individual artifact contents.
-      - name: Rename SDK Directory for Artifact
+      - name: Create Versioned Directory and Move Files
         run: |
-          mv "${{ env.SDK_DIR }}" "vulkansdk-linux-arm64-${{ matrix.os }}-${{ env.SDK_VERSION }}"
+          mkdir -p ${{ env.SDK_VERSION }}
+          mv "${{ env.SDK_DIR }}"/* ${{ env.SDK_VERSION }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: vulkansdk-linux-arm64-${{ matrix.os }}-${{ env.SDK_VERSION }}
-          path: vulkansdk-linux-arm64-${{ matrix.os }}-${{ env.SDK_VERSION }}
+          path: ${{ env.SDK_VERSION }}
