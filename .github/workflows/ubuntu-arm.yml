@@ -71,9 +71,9 @@ jobs:
         run: |
           cd "${{ env.SDK_DIR }}"
           if [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
-            CC=/usr/bin/aarch64-linux-gnu-gcc-12 CXX=/usr/bin/aarch64-linux-gnu-g++-12 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
+            CC=/usr/bin/aarch64-linux-gnu-gcc-12 CXX=/usr/bin/aarch64-linux-gnu-g++-12 ./vulkansdk --maxjobs --no-deps
           elif [[ "${{ matrix.os }}" == "ubuntu-24.04-arm" ]]; then
-            CC=/usr/bin/aarch64-linux-gnu-gcc-14 CXX=/usr/bin/aarch64-linux-gnu-g++-14 ./vulkansdk --maxjobs vulkan-loader vulkan-validationlayers vulkan-extensionlayer
+            CC=/usr/bin/aarch64-linux-gnu-gcc-14 CXX=/usr/bin/aarch64-linux-gnu-g++-14 ./vulkansdk --maxjobs --no-deps
           fi
 
       # When an Artifact is uploaded, all the files are assembled into an immutable Zip archive. There is currently no way to download artifacts in a format other than a Zip or to download individual artifact contents.
